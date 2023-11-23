@@ -10,14 +10,93 @@ use ratatui::{
 };
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
+use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 use tui_textarea::{Input, Key, TextArea};
+
+#[derive(Clone)]
+struct Signature<'a> {
+    text_area: TextArea<'a>,
+    valid: bool,
+}
+
+impl<'a> Signature<'a> {
+    fn new() -> Self {
+        Self::default()
+    }
+
+    fn input(&mut self, input: Input) {
+        match input {
+            Input {
+                key: Key::Char('v'),
+                ctrl: true,
+                ..
+            } => self.set_valid(true),
+            Input {
+                key: Key::Char('b'),
+                ctrl: true,
+                ..
+            } => self.set_valid(false),
+            input => { self.text_area.input(input); },
+        }
+
+        self.update_block();
+    }
+
+    fn set_valid(&mut self, valid: bool) {
+        self.valid = valid;
+    }
+
+    fn update_block(&mut self) {
+        let title = if self.valid {
+            Line::from(vec![
+                Span::raw(" Decoding Key (^D) -"),
+                Span::styled(" Valid ", Style::default().fg(Color::Green)),
+            ])
+        } else {
+            Line::from(vec![
+                Span::raw(" Decoding Key (^D) -"),
+                Span::styled(" Invalid ", Style::default().fg(Color::Red)),
+            ])
+        };
+        self.text_area.set_block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title(title),
+        );
+    }
+
+    fn widget(&'a self) -> impl Widget + 'a {
+        self.text_area.widget()
+    }
+}
+
+impl Default for Signature<'_> {
+    fn default() -> Self {
+        let mut text_area = TextArea::default();
+        text_area.set_block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title(Line::from(vec![
+                    Span::raw(" Decoding Key (^D) -"),
+                    Span::styled(" Invalid ", Style::default().fg(Color::Red)),
+                ])),
+        );
+        text_area.set_cursor_line_style(Default::default());
+        text_area.set_cursor_style(Default::default());
+
+        Signature {
+            text_area,
+            valid: false,
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct Chang<'a> {
     header: Paragraph<'a>,
     claims: Paragraph<'a>,
-    signature: TextArea<'a>,
+    signature: Signature<'a>,
 }
 
 impl Chang<'_> {
@@ -48,16 +127,10 @@ impl Default for Chang<'_> {
             Wrap{ trim: false }
         );
 
-        let signature_block = Block::default()
-            .borders(Borders::ALL)
-            .title(" Signature (^S) ");
-        let mut signature = TextArea::default();
-        signature.set_block(signature_block);
-
         Chang {
             header,
             claims,
-            signature,
+            signature: Signature::default(),
         }
     }
 }
