@@ -11,7 +11,7 @@ use ratatui::{
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
-use tui_textarea::TextArea;
+use tui_textarea::{Input, Key, TextArea};
 
 #[derive(Clone)]
 pub struct Chang<'a> {
@@ -25,23 +25,8 @@ impl Chang<'_> {
         Self::default()
     }
 
-    pub fn process_event(&mut self, event: Event) {
-        match event {
-            Event::FocusGained => {}
-            Event::FocusLost => {}
-            Event::Key(k) => match k.code {
-                KeyCode::Char(char) => {
-                    self.signature.insert_char(char);
-                }
-                KeyCode::Backspace => {
-                    self.signature.delete_char();
-                }
-                _ => {}
-            },
-            Event::Mouse(_) => {}
-            Event::Paste(_) => {}
-            Event::Resize(_, _) => {}
-        }
+    pub fn process_input(&mut self, input: Input) {
+        self.signature.input(input);
     }
 }
 
@@ -123,14 +108,33 @@ fn event_loop<B: Backend>(terminal: &mut Terminal<B>) -> Result<()> {
     loop {
         terminal.draw(|frame| ui(frame, &chang))?;
 
-        if let Event::Key(key) = read()? {
-            match key.code {
-                KeyCode::Esc => return Ok(()),
-                KeyCode::Char(_) | KeyCode::Backspace => {
-                    chang.process_event(Event::Key(key));
+        let quit_inputs = [
+            Input {
+                key: Key::Esc,
+                ctrl: false,
+                alt: false,
+                shift: false,
+            },
+            Input {
+                key: Key::Char('c'),
+                ctrl: true,
+                alt: false,
+                shift: false,
+            },
+        ];
+
+        match read()? {
+            Event::FocusGained => {}
+            Event::FocusLost => {}
+            Event::Key(event) => {
+                match Input::from(event) {
+                    input if quit_inputs.contains(&input) => return Ok(()),
+                    input => chang.process_input(input),
                 }
-                code => bail!(format!("unrecognised keycode: {:?}", code))
             }
+            Event::Mouse(_) => {}
+            Event::Paste(_) => {}
+            Event::Resize(_, _) => {}
         }
     }
 }
