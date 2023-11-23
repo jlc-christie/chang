@@ -13,10 +13,36 @@ use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 use tui_textarea::TextArea;
 
+#[derive(Clone)]
 pub struct Chang<'a> {
     header: Paragraph<'a>,
     claims: Paragraph<'a>,
     signature: TextArea<'a>,
+}
+
+impl Chang<'_> {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn process_event(&mut self, event: Event) {
+        match event {
+            Event::FocusGained => {}
+            Event::FocusLost => {}
+            Event::Key(k) => match k.code {
+                KeyCode::Char(char) => {
+                    self.signature.insert_char(char);
+                }
+                KeyCode::Backspace => {
+                    self.signature.delete_char();
+                }
+                _ => {}
+            },
+            Event::Mouse(_) => {}
+            Event::Paste(_) => {}
+            Event::Resize(_, _) => {}
+        }
+    }
 }
 
 impl Default for Chang<'_> {
@@ -92,19 +118,23 @@ fn main() -> Result<()> {
 }
 
 fn event_loop<B: Backend>(terminal: &mut Terminal<B>) -> Result<()> {
+    let mut chang = Chang::default();
+
     loop {
-        terminal.draw(ui)?;
+        terminal.draw(|frame| ui(frame, &chang))?;
 
         if let Event::Key(key) = read()? {
             match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => return Ok(()),
+                KeyCode::Esc => return Ok(()),
+                KeyCode::Char(_) | KeyCode::Backspace => {
+                    chang.process_event(Event::Key(key));
+                }
                 code => bail!(format!("unrecognised keycode: {:?}", code))
             }
         }
     }
 }
 
-fn ui(frame: &mut Frame) {
-    let chang = Chang::default();
-    frame.render_widget(chang, frame.size());
+fn ui(frame: &mut Frame, chang: &Chang, ) {
+    frame.render_widget(chang.clone(), frame.size());
 }
