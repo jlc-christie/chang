@@ -11,11 +11,12 @@ use ratatui::{
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
+use tui_textarea::TextArea;
 
 pub struct Chang<'a> {
     header: Paragraph<'a>,
-    claims: Block<'a>,
-    signature: Block<'a>,
+    claims: Paragraph<'a>,
+    signature: TextArea<'a>,
 }
 
 impl Default for Chang<'_> {
@@ -28,10 +29,24 @@ impl Default for Chang<'_> {
             Wrap{ trim: false }
         );
 
+        let claims = Paragraph::new("Some claims").block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title(" Claims (^C) ")
+        ).wrap(
+            Wrap{ trim: false }
+        );
+
+        let signature_block = Block::default()
+            .borders(Borders::ALL)
+            .title(" Signature (^S) ");
+        let mut signature = TextArea::default();
+        signature.set_block(signature_block);
+
         Chang {
             header,
-            claims: Block::default().title(" Claims ").borders(Borders::ALL),
-            signature: Block::default().title(" Signature ").borders(Borders::ALL),
+            claims,
+            signature,
         }
     }
 }
@@ -52,7 +67,7 @@ impl<'a> Widget for Chang<'a> {
 
         self.header.render(chunks[0], buf);
         self.claims.render(chunks[1], buf);
-        self.signature.render(chunks[2], buf);
+        self.signature.widget().render(chunks[2], buf);
     }
 }
 
@@ -78,7 +93,7 @@ fn main() -> Result<()> {
 
 fn event_loop<B: Backend>(terminal: &mut Terminal<B>) -> Result<()> {
     loop {
-        terminal.draw(|f| ui(f))?;
+        terminal.draw(ui)?;
 
         if let Event::Key(key) = read()? {
             match key.code {
