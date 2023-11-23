@@ -106,7 +106,7 @@ fn event_loop<B: Backend>(terminal: &mut Terminal<B>) -> Result<()> {
     let mut chang = Chang::default();
 
     loop {
-        terminal.draw(|frame| ui(frame, &chang))?;
+        terminal.draw(|frame| frame.render_widget(chang.clone(), frame.size()))?;
 
         let quit_inputs = [
             Input {
@@ -137,8 +137,4 @@ fn event_loop<B: Backend>(terminal: &mut Terminal<B>) -> Result<()> {
             Event::Resize(_, _) => {}
         }
     }
-}
-
-fn ui(frame: &mut Frame, chang: &Chang, ) {
-    frame.render_widget(chang.clone(), frame.size());
 }
