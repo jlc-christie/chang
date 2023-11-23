@@ -1,16 +1,16 @@
 use std::io;
 use anyhow::{bail, Result};
 use crossterm::{
-    event::{EnableMouseCapture, DisableMouseCapture, Event, KeyCode, read},
+    event::{EnableMouseCapture, DisableMouseCapture, Event, read},
     execute,
     terminal::{enable_raw_mode, disable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}
 };
+use ratatui::prelude::*;
 use ratatui::{
-    backend::{Backend, CrosstermBackend}, Frame, Terminal
+    backend::{Backend, CrosstermBackend}, Terminal
 };
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
 use tui_textarea::{Input, Key, TextArea};
 
@@ -21,6 +21,7 @@ struct Signature<'a> {
 }
 
 impl<'a> Signature<'a> {
+    #[allow(dead_code)]
     fn new() -> Self {
         Self::default()
     }
@@ -31,20 +32,16 @@ impl<'a> Signature<'a> {
                 key: Key::Char('v'),
                 ctrl: true,
                 ..
-            } => self.set_valid(true),
+            } => self.valid = true,
             Input {
                 key: Key::Char('b'),
                 ctrl: true,
                 ..
-            } => self.set_valid(false),
+            } => self.valid = false,
             input => { self.text_area.input(input); },
         }
 
         self.update_block();
-    }
-
-    fn set_valid(&mut self, valid: bool) {
-        self.valid = valid;
     }
 
     fn update_block(&mut self) {
@@ -59,9 +56,11 @@ impl<'a> Signature<'a> {
                 Span::styled(" Invalid ", Style::default().fg(Color::Red)),
             ])
         };
-        self.text_area.set_block(
+
+       self.text_area.set_block(
             Block::default()
                 .borders(Borders::ALL)
+                .border_style(Style::default().fg(Color::Rgb(0, 185, 241)))
                 .title(title),
         );
     }
@@ -77,6 +76,7 @@ impl Default for Signature<'_> {
         text_area.set_block(
             Block::default()
                 .borders(Borders::ALL)
+                .border_style(Style::default().fg(Color::Rgb(0, 185, 241)))
                 .title(Line::from(vec![
                     Span::raw(" Decoding Key (^D) -"),
                     Span::styled(" Invalid ", Style::default().fg(Color::Red)),
@@ -114,6 +114,7 @@ impl Default for Chang<'_> {
         let header = Paragraph::new("Some header").block(
             Block::default()
                 .borders(Borders::ALL)
+                .border_style(Style::default().fg(Color::Rgb(251, 1, 91)))
                 .title(" Header (^H) ")
         ).wrap(
             Wrap{ trim: false }
@@ -122,6 +123,7 @@ impl Default for Chang<'_> {
         let claims = Paragraph::new("Some claims").block(
             Block::default()
                 .borders(Borders::ALL)
+                .border_style(Style::default().fg(Color::Rgb(214, 58, 255)))
                 .title(" Claims (^C) ")
         ).wrap(
             Wrap{ trim: false }
