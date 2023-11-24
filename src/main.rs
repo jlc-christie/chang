@@ -1,7 +1,7 @@
 mod widget;
 
 use std::io;
-use anyhow::{Result};
+use anyhow::{Context, Result};
 use crossterm::{
     event::{EnableMouseCapture, DisableMouseCapture, Event, read},
     execute,
@@ -14,13 +14,15 @@ use tui_textarea::{Input, Key};
 use widget::Chang;
 
 fn main() -> Result<()> {
+    let mut chang = Chang::new("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c").context("failed to create chang from provided jwt")?;
+
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let res = event_loop(&mut terminal);
+    let res = event_loop(&mut terminal, &mut chang);
 
     disable_raw_mode()?;
     execute!(
@@ -33,9 +35,7 @@ fn main() -> Result<()> {
     res
 }
 
-fn event_loop<B: Backend>(terminal: &mut Terminal<B>) -> Result<()> {
-    let mut chang = Chang::default();
-
+fn event_loop<B: Backend>(terminal: &mut Terminal<B>, chang: &mut Chang) -> Result<()> {
     loop {
         terminal.draw(|frame| frame.render_widget(chang.clone(), frame.size()))?;
 
