@@ -1,6 +1,6 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
-use tui_textarea::Input;
+use tui_textarea::{Input, TextArea};
 use anyhow::{Context, Result};
 use base64::Engine;
 use std::str;
@@ -8,8 +8,8 @@ use crate::widget::Signature;
 
 #[derive(Clone)]
 pub struct Chang<'a> {
-    header: Paragraph<'a>,
-    claims: Paragraph<'a>,
+    header: TextArea<'a>,
+    claims: TextArea<'a>,
     signature: Signature<'a>,
     alg: jsonwebtoken::Algorithm,
     header_text: String,
@@ -26,23 +26,21 @@ impl Chang<'_> {
         let header_text = Self::b64_to_json(header_text).context("failed to convert header b64 to json")?;
         let claims_text = Self::b64_to_json(claims_text).context("failed to convert claims b64 to json")?;
 
-        let header = Paragraph::new(header_text.clone()).block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Rgb(251, 1, 91)))
-                .title(" Header (^H) ")
-        ).wrap(
-            Wrap{ trim: false }
+        let mut header = TextArea::new(
+            header_text.split('\n').map(|s| s.to_string()).collect()
         );
+        header.set_block(Block::default()
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(Color::Rgb(251, 1, 91)))
+            .title(" Header (^H) "));
 
-        let claims = Paragraph::new(claims_text.clone()).block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Rgb(214, 58, 255)))
-                .title(" Claims (^C) ")
-        ).wrap(
-            Wrap{ trim: false }
+        let mut claims = TextArea::new(
+            claims_text.split('\n').map(|s| s.to_string()).collect()
         );
+        claims.set_block(Block::default()
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(Color::Rgb(214, 58, 255)))
+            .title(" Claims (^C) "));
 
         Ok(
             Chang {
@@ -102,8 +100,8 @@ impl<'a> Widget for Chang<'a> {
             )
             .split(area);
 
-        self.header.render(chunks[0], buf);
-        self.claims.render(chunks[1], buf);
+        self.header.widget().render(chunks[0], buf);
+        self.claims.widget().render(chunks[1], buf);
         self.signature.widget().render(chunks[2], buf);
     }
 }
