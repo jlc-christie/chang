@@ -29,6 +29,7 @@ impl Chang<'_> {
         let mut header = TextArea::new(
             header_text.split('\n').map(|s| s.to_string()).collect()
         );
+        header.set_line_number_style(Style::default().fg(Color::Rgb(251, 1, 91)));
         header.set_block(Block::default()
             .borders(Borders::ALL)
             .border_style(Style::default().fg(Color::Rgb(251, 1, 91)))
@@ -37,6 +38,7 @@ impl Chang<'_> {
         let mut claims = TextArea::new(
             claims_text.split('\n').map(|s| s.to_string()).collect()
         );
+        claims.set_line_number_style(Style::default().fg(Color::Rgb(214, 58, 255)));
         claims.set_block(Block::default()
             .borders(Borders::ALL)
             .border_style(Style::default().fg(Color::Rgb(214, 58, 255)))
