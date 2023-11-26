@@ -1,10 +1,17 @@
 use ratatui::prelude::*;
-use ratatui::widgets::{Block, Borders, Paragraph, Widget, Wrap};
+use ratatui::widgets::{Block, Borders, Widget};
 use tui_textarea::{Input, TextArea};
 use anyhow::{Context, Result};
 use base64::Engine;
 use std::str;
 use crate::widget::Signature;
+
+#[derive(Clone)]
+pub enum FocusArea {
+    Header,
+    Claims,
+    Signature
+}
 
 #[derive(Clone)]
 pub struct Chang<'a> {
@@ -15,6 +22,7 @@ pub struct Chang<'a> {
     header_text: String,
     claims_text: String,
     signature_text: String,
+    focus_area: FocusArea
 }
 
 impl Chang<'_> {
@@ -33,7 +41,7 @@ impl Chang<'_> {
         header.set_block(Block::default()
             .borders(Borders::ALL)
             .border_style(Style::default().fg(Color::Rgb(251, 1, 91)))
-            .title(" Header (^H) "));
+            .title(" Header (^h) "));
 
         let mut claims = TextArea::new(
             claims_text.split('\n').map(|s| s.to_string()).collect()
@@ -42,7 +50,7 @@ impl Chang<'_> {
         claims.set_block(Block::default()
             .borders(Borders::ALL)
             .border_style(Style::default().fg(Color::Rgb(214, 58, 255)))
-            .title(" Claims (^C) "));
+            .title(" Claims (^b) "));
 
         Ok(
             Chang {
@@ -53,8 +61,13 @@ impl Chang<'_> {
                 header_text,
                 claims_text,
                 signature_text: signature_text.to_string(),
+                focus_area: FocusArea::Signature
             }
         )
+    }
+
+    pub fn focus_area(&mut self, area: FocusArea) {
+        self.focus_area = area
     }
 
     fn get_alg(jwt: &str) -> Result<jsonwebtoken::Algorithm> {
@@ -83,8 +96,12 @@ impl Chang<'_> {
         Ok(text)
     }
 
-    pub fn process_input(&mut self, input: Input) {
-        self.signature.input(input);
+    pub fn process_input(&mut self, input: Input) -> bool {
+        match self.focus_area {
+            FocusArea::Header => self.header.input(input),
+            FocusArea::Claims => self.claims.input(input),
+            FocusArea::Signature => self.signature.input(input),
+        }
     }
 }
 

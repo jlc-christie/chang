@@ -14,33 +14,40 @@ impl<'a> Signature<'a> {
         Self::default()
     }
 
-    pub fn input(&mut self, input: Input) {
-        match input {
+    pub fn input(&mut self, input: Input) -> bool {
+        let result = match input {
             Input {
                 key: Key::Char('v'),
                 ctrl: true,
                 ..
-            } => self.valid = true,
+            } => {
+                self.valid = true;
+                true
+            },
             Input {
                 key: Key::Char('b'),
                 ctrl: true,
                 ..
-            } => self.valid = false,
-            input => { self.text_area.input(input); },
-        }
+            } => {
+                self.valid = false;
+                true
+            },
+            input => self.text_area.input(input),
+        };
 
         self.update_block();
+        result
     }
 
     fn update_block(&mut self) {
         let title = if self.valid {
             Line::from(vec![
-                Span::raw(" Decoding Key (^D) -"),
+                Span::raw(" Decoding Key (^d) -"),
                 Span::styled(" Valid ", Style::default().fg(Color::Green)),
             ])
         } else {
             Line::from(vec![
-                Span::raw(" Decoding Key (^D) -"),
+                Span::raw(" Decoding Key (^d) -"),
                 Span::styled(" Invalid ", Style::default().fg(Color::Red)),
             ])
         };
@@ -66,7 +73,7 @@ impl Default for Signature<'_> {
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(Color::Rgb(0, 185, 241)))
                 .title(Line::from(vec![
-                    Span::raw(" Decoding Key (^D) -"),
+                    Span::raw(" Decoding Key (^d) -"),
                     Span::styled(" Invalid ", Style::default().fg(Color::Red)),
                 ])),
         );

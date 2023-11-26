@@ -162,6 +162,7 @@ dependencies = [
  "confy",
  "crossterm",
  "jsonwebtoken",
+ "log",
  "ratatui",
  "serde",
  "serde_json",

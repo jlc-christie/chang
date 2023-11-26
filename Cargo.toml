@@ -16,3 +16,4 @@ ratatui = "*"
 serde = { version = "*", features = ["derive"] }
 serde_json = "*"
 tui-textarea = { version = "*"}
+log = "0.4.20"

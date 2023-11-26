@@ -11,7 +11,9 @@ use ratatui::{
     backend::{Backend, CrosstermBackend}, Terminal
 };
 use tui_textarea::{Input, Key};
+use log::{error};
 use widget::Chang;
+use crate::widget::FocusArea;
 
 fn main() -> Result<()> {
     let mut chang = Chang::new("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c").context("failed to create chang from provided jwt")?;
@@ -60,7 +62,14 @@ fn event_loop<B: Backend>(terminal: &mut Terminal<B>, chang: &mut Chang) -> Resu
             Event::Key(event) => {
                 match Input::from(event) {
                     input if quit_inputs.contains(&input) => return Ok(()),
-                    input => chang.process_input(input),
+                    Input{ctrl: true, key: Key::Char('h'), ..} => chang.focus_area(FocusArea::Header),
+                    Input{ctrl: true, key: Key::Char('b'), ..} => chang.focus_area(FocusArea::Claims),
+                    Input{ctrl: true, key: Key::Char('d'), ..} => chang.focus_area(FocusArea::Signature),
+                    input => {
+                        if !chang.process_input(input.clone()) {
+                            error!("failed to process input: {:?}", input)
+                        }
+                    },
                 }
             }
             Event::Mouse(_) => {}
