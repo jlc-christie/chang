@@ -58,7 +58,7 @@ impl Chang<'_> {
             Chang {
                 header,
                 claims,
-                signature: Signature::default(),
+                signature: Signature::new(jwt.clone()),
                 alg,
                 header_text,
                 claims_text,
