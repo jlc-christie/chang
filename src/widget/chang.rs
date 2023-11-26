@@ -67,6 +67,13 @@ impl Chang<'_> {
     }
 
     pub fn focus_area(&mut self, area: FocusArea) {
+        // TODO(jlc-christie): unfocus current focus area before focusing new area
+        match self.focus_area {
+            FocusArea::Header => {}
+            FocusArea::Claims => {}
+            FocusArea::Signature => {}
+        }
+
         self.focus_area = area
     }
 

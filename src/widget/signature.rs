@@ -6,6 +6,7 @@ use tui_textarea::{Input, Key, TextArea};
 pub struct Signature<'a> {
     text_area: TextArea<'a>,
     valid: bool,
+    active: bool,
 }
 
 impl<'a> Signature<'a> {
@@ -83,6 +84,7 @@ impl Default for Signature<'_> {
         Signature {
             text_area,
             valid: false,
+            active: true,
         }
     }
 }
