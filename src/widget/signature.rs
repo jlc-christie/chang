@@ -72,6 +72,7 @@ impl Default for Signature<'_> {
         text_area.set_block(
             Block::default()
                 .borders(Borders::ALL)
+                // 96, 133, 144 @ 20% Luminance
                 .border_style(Style::default().fg(Color::Rgb(0, 185, 241)))
                 .title(Line::from(vec![
                     Span::raw(" Decoding Key (^d) -"),
