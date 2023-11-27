@@ -61,17 +61,16 @@ impl Chang<'_> {
     }
 
     pub fn focus_area(&mut self, area: FocusArea) {
-        // TODO(jlc-christie): unfocus current focus area before focusing new area
         match self.focus_area {
             FocusArea::Header => self.header.set_focused(false),
             FocusArea::Claims => self.claims.set_focused(false),
-            FocusArea::Signature => {}
+            FocusArea::Signature => self.signature.set_focused(false),
         }
 
         match area {
             FocusArea::Header => self.header.set_focused(true),
             FocusArea::Claims => self.claims.set_focused(true),
-            FocusArea::Signature => {}
+            FocusArea::Signature => self.signature.set_focused(true),
         }
 
         self.focus_area = area

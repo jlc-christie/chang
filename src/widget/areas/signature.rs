@@ -11,7 +11,7 @@ pub struct Signature<'a> {
     text_area: TextArea<'a>,
     jwt: String,
     valid: bool,
-    active: bool,
+    focused: bool,
 }
 
 impl<'a> Signature<'a> {
@@ -35,7 +35,7 @@ impl<'a> Signature<'a> {
             text_area,
             jwt,
             valid: false,
-            active: true,
+            focused: true,
         }
     }
 
@@ -105,5 +105,18 @@ impl<'a> Signature<'a> {
         );
         // TODO(jlc-christie): display error message to user somehow?
         self.valid = token_message.is_ok();
+    }
+
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+
+        // TODO(jlc-christie): why can't we use `?` on the optional below?
+        let mut block = self.text_area.block().cloned().expect("failed to unwrap header text area block");
+        if focused {
+            block = block.border_style(Style::default().fg(Color::Rgb(0, 185, 241)));
+        } else {
+            block = block.border_style(Style::default().fg(Color::Rgb(96, 133, 144)));
+        }
+        self.text_area.set_block(block);
     }
 }
