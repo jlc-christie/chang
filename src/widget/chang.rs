@@ -39,10 +39,12 @@ impl Chang<'_> {
         let mut header = Header::new(
             header_text.split('\n').map(|s| s.to_string()).collect::<Vec<String>>()
         ).context("failed to create header area")?;
+        header.set_focused(false);
 
         let mut claims = Claims::new(
             claims_text.split('\n').map(|s| s.to_string()).collect::<Vec<String>>()
         ).context("failed to create claims area")?;
+        claims.set_focused(false);
 
         Ok(
             Chang {

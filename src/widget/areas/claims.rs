@@ -5,7 +5,8 @@ use ratatui::widgets::{Block, Borders, Widget};
 
 #[derive(Clone)]
 pub struct Claims<'a> {
-    text_area: TextArea<'a>
+    text_area: TextArea<'a>,
+    focused: bool,
 }
 
 impl<'a> Claims<'a> {
@@ -20,6 +21,7 @@ impl<'a> Claims<'a> {
         Ok(
             Claims{
                 text_area,
+                focused: true,
             }
         )
     }
@@ -30,5 +32,20 @@ impl<'a> Claims<'a> {
 
     pub fn widget(&'a self) -> impl Widget + 'a {
         self.text_area.widget()
+    }
+
+    pub fn set_focused(&mut self, focused: bool) {
+        self.focused = focused;
+
+        // TODO(jlc-christie): why can't we use `?` on the optional below?
+        let mut block = self.text_area.block().cloned().expect("failed to unwrap header text area block");
+        if focused {
+            block = block.border_style(Style::default().fg(Color::Rgb(251, 1, 91)));
+            self.text_area.set_line_number_style(Style::default().fg(Color::Rgb(251, 1, 91)));
+        } else {
+            block = block.border_style(Style::default().fg(Color::Rgb(167, 136, 175)));
+            self.text_area.set_line_number_style(Style::default().fg(Color::Rgb(167, 136, 175)));
+        }
+        self.text_area.set_block(block);
     }
 }
