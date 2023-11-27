@@ -1,6 +1,6 @@
 use tui_textarea::TextArea;
 use anyhow::{Context, Result};
-use ratatui::style::{Color, Style};
+use ratatui::style::{Color, Style, Stylize};
 use ratatui::widgets::{Block, Borders, Widget};
 
 #[derive(Clone)]
@@ -12,7 +12,6 @@ pub struct Header<'a> {
 impl<'a> Header<'a> {
     pub fn new(text: impl Into<Vec<String>>) -> Result<Self> {
         let mut text_area = TextArea::new(text.into());
-        // 150, 100, 118 @ 20% Luminance
         text_area.set_line_number_style(Style::default().fg(Color::Rgb(251, 1, 91)));
         text_area.set_block(Block::default()
             .borders(Borders::ALL)
@@ -44,11 +43,9 @@ impl<'a> Header<'a> {
         // TODO(jlc-christie): why can't we use `?` on the optional below?
         let mut block = self.text_area.block().cloned().expect("failed to unwrap header text area block");
         if focused {
-            block = block.border_style(Style::default().fg(Color::Rgb(251, 1, 91)));
-            self.text_area.set_line_number_style(Style::default().fg(Color::Rgb(251, 1, 91)));
+            block = block.not_dim();
         } else {
-            block = block.border_style(Style::default().fg(Color::Rgb(150, 100, 118)));
-            self.text_area.set_line_number_style(Style::default().fg(Color::Rgb(150, 100, 118)));
+            block = block.dim();
         }
         self.text_area.set_block(block);
     }

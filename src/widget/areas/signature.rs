@@ -21,7 +21,6 @@ impl<'a> Signature<'a> {
         text_area.set_block(
             Block::default()
                 .borders(Borders::ALL)
-                // 96, 133, 144 @ 20% Luminance
                 .border_style(Style::default().fg(Color::Rgb(0, 185, 241)))
                 .title(Line::from(vec![
                     Span::raw(" Decoding Key (^d) -"),
@@ -113,9 +112,9 @@ impl<'a> Signature<'a> {
         // TODO(jlc-christie): why can't we use `?` on the optional below?
         let mut block = self.text_area.block().cloned().expect("failed to unwrap header text area block");
         if focused {
-            block = block.border_style(Style::default().fg(Color::Rgb(0, 185, 241)));
+            block = block.not_dim();
         } else {
-            block = block.border_style(Style::default().fg(Color::Rgb(96, 133, 144)));
+            block = block.dim();
         }
         self.text_area.set_block(block);
     }
