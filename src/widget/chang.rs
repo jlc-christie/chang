@@ -4,7 +4,7 @@ use tui_textarea::{Input, TextArea};
 use anyhow::{Context, Result};
 use base64::Engine;
 use std::str;
-use crate::widget::Signature;
+use crate::widget::{Claims, Header, Signature};
 
 #[derive(Clone)]
 pub enum FocusArea {
@@ -15,8 +15,8 @@ pub enum FocusArea {
 
 #[derive(Clone)]
 pub struct Chang<'a> {
-    header: TextArea<'a>,
-    claims: TextArea<'a>,
+    header: Header<'a>,
+    claims: Claims<'a>,
     signature: Signature<'a>,
     alg: jsonwebtoken::Algorithm,
     header_text: String,
@@ -31,28 +31,18 @@ impl Chang<'_> {
         let alg = Self::get_alg(&jwt).context("failed to parse alg from header of jwt")?;
         let (header_text, claims_text, signature_text) = Self::destructure_jwt(&jwt)
             .context("failed to destructure jwt")?;
-        let header_text = Self::b64_to_json(header_text).context("failed to convert header b64 to json")?;
-        let claims_text = Self::b64_to_json(claims_text).context("failed to convert claims b64 to json")?;
+        let header_text = Self::b64_to_json(header_text)
+            .context("failed to convert header b64 to json")?;
+        let claims_text = Self::b64_to_json(claims_text)
+            .context("failed to convert claims b64 to json")?;
 
-        let mut header = TextArea::new(
-            header_text.split('\n').map(|s| s.to_string()).collect()
-        );
-        // 150, 100, 118 @ 20% Luminance
-        header.set_line_number_style(Style::default().fg(Color::Rgb(251, 1, 91)));
-        header.set_block(Block::default()
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Rgb(251, 1, 91)))
-            .title(" Header (^h) "));
+        let mut header = Header::new(
+            header_text.split('\n').map(|s| s.to_string()).collect::<Vec<String>>()
+        ).context("failed to create header area")?;
 
-        let mut claims = TextArea::new(
-            claims_text.split('\n').map(|s| s.to_string()).collect()
-        );
-        // 167, 136, 175 @ 20% Luminance
-        claims.set_line_number_style(Style::default().fg(Color::Rgb(214, 58, 255)));
-        claims.set_block(Block::default()
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Rgb(214, 58, 255)))
-            .title(" Claims (^b) "));
+        let mut claims = Claims::new(
+            claims_text.split('\n').map(|s| s.to_string()).collect::<Vec<String>>()
+        ).context("failed to create claims area")?;
 
         Ok(
             Chang {

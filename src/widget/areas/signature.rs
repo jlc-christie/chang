@@ -1,5 +1,6 @@
 use std::collections::{HashSet};
 use jsonwebtoken::Algorithm;
+// TODO(jlc-christie): remove glob, use specific imports (even if it is from prelude)
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Widget};
 use serde_json::Value;
@@ -92,6 +93,7 @@ impl<'a> Signature<'a> {
     fn validate_signature(&mut self) {
         let lines = self.text_area.clone().into_lines();
         let decoding_key = lines.join("\n");
+        // TODO(jlc-christie): support remaining algs
         let mut validation = jsonwebtoken::Validation::new(Algorithm::HS256);
         validation.required_spec_claims = HashSet::new();
         validation.validate_exp = false;
