@@ -1,5 +1,6 @@
 use std::collections::{HashSet};
 use jsonwebtoken::Algorithm;
+use anyhow::{Context, Result};
 // TODO(jlc-christie): remove glob, use specific imports (even if it is from prelude)
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Widget};
@@ -10,13 +11,14 @@ use tui_textarea::{Input, Key, TextArea};
 pub struct Signature<'a> {
     text_area: TextArea<'a>,
     jwt: String,
+    alg: jsonwebtoken::Algorithm,
     valid: bool,
     focused: bool,
 }
 
 impl<'a> Signature<'a> {
     #[allow(dead_code)]
-    pub fn new(jwt: String) -> Self {
+    pub fn new(jwt: String) -> Result<Self> {
         let mut text_area = TextArea::default();
         text_area.set_block(
             Block::default()
@@ -28,14 +30,17 @@ impl<'a> Signature<'a> {
                 ])),
         );
         text_area.set_cursor_line_style(Default::default());
-        text_area.set_cursor_style(Default::default());
+        let alg = Self::get_alg(&jwt).context("failed to get alg from jwt")?;
 
-        Signature {
-            text_area,
-            jwt,
-            valid: false,
-            focused: true,
-        }
+        Ok(
+            Signature {
+                text_area,
+                jwt,
+                alg,
+                valid: false,
+                focused: true,
+            }
+        )
     }
 
     pub fn input(&mut self, input: Input) -> bool {
@@ -92,8 +97,7 @@ impl<'a> Signature<'a> {
     fn validate_signature(&mut self) {
         let lines = self.text_area.clone().into_lines();
         let decoding_key = lines.join("\n");
-        // TODO(jlc-christie): support remaining algs
-        let mut validation = jsonwebtoken::Validation::new(Algorithm::HS256);
+        let mut validation = jsonwebtoken::Validation::new(self.alg);
         validation.required_spec_claims = HashSet::new();
         validation.validate_exp = false;
 
@@ -117,5 +121,12 @@ impl<'a> Signature<'a> {
             block = block.dim();
         }
         self.text_area.set_block(block);
+    }
+
+    fn get_alg(jwt: &str) -> Result<jsonwebtoken::Algorithm> {
+        let header = jsonwebtoken::decode_header(jwt)
+            .context("failed to decode header")?;
+
+        Ok(header.alg)
     }
 }

@@ -1,5 +1,5 @@
 use tui_textarea::TextArea;
-use anyhow::{Context, Result};
+use anyhow::{Result};
 use ratatui::style::{Color, Style, Stylize};
 use ratatui::widgets::{Block, Borders, Widget};
 

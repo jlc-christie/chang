@@ -18,18 +18,13 @@ pub struct Chang<'a> {
     header: Header<'a>,
     claims: Claims<'a>,
     signature: Signature<'a>,
-    alg: jsonwebtoken::Algorithm,
-    header_text: String,
-    claims_text: String,
-    signature_text: String,
     focus_area: FocusArea
 }
 
 impl Chang<'_> {
     pub fn new(jwt: impl Into<String>) -> Result<Self> {
         let jwt = jwt.into();
-        let alg = Self::get_alg(&jwt).context("failed to parse alg from header of jwt")?;
-        let (header_text, claims_text, signature_text) = Self::destructure_jwt(&jwt)
+        let (header_text, claims_text, _) = Self::destructure_jwt(&jwt)
             .context("failed to destructure jwt")?;
         let header_text = Self::b64_to_json(header_text)
             .context("failed to convert header b64 to json")?;
@@ -46,15 +41,15 @@ impl Chang<'_> {
         ).context("failed to create claims area")?;
         claims.set_focused(false);
 
+        let signature = Signature::new(
+            jwt.clone()
+        ).context("failed to create signature area")?;
+
         Ok(
             Chang {
                 header,
                 claims,
-                signature: Signature::new(jwt.clone()),
-                alg,
-                header_text,
-                claims_text,
-                signature_text: signature_text.to_string(),
+                signature,
                 focus_area: FocusArea::Signature
             }
         )
@@ -75,13 +70,6 @@ impl Chang<'_> {
 
         self.focus_area = area
 
-    }
-
-    fn get_alg(jwt: &str) -> Result<jsonwebtoken::Algorithm> {
-        let header = jsonwebtoken::decode_header(jwt)
-            .context("failed to decode header")?;
-
-        Ok(header.alg)
     }
 
     fn destructure_jwt(jwt: &str) -> Result<(&str, &str, &str)> {
