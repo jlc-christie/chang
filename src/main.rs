@@ -12,11 +12,19 @@ use ratatui::{
 };
 use tui_textarea::{Input, Key};
 use log::{error};
+use clap::{Parser};
 use widget::Chang;
 use crate::widget::FocusArea;
 
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    jwt: String,
+}
+
 fn main() -> Result<()> {
-    let mut chang = Chang::new("eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.tyh-VfuzIxCyGYDlkBA7DfyjrqmSHu6pQ2hoZuFqUSLPNY2N0mpHb3nk5K17HWP_3cYHBw7AhHale5wky6-sVA").context("failed to create chang from provided jwt")?;
+    let args = Args::parse();
+    let mut chang = Chang::new(args.jwt).context("failed to create chang from provided jwt")?;
 
     enable_raw_mode()?;
     let mut stdout = io::stdout();
