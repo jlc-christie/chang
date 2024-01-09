@@ -1,6 +1,6 @@
 use std::collections::{HashSet};
-use jsonwebtoken::Algorithm;
 use anyhow::{Context, Result};
+use jsonwebtoken::Algorithm;
 // TODO(jlc-christie): remove glob, use specific imports (even if it is from prelude)
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Widget};
@@ -101,9 +101,10 @@ impl<'a> Signature<'a> {
         validation.required_spec_claims = HashSet::new();
         validation.validate_exp = false;
 
+        let decoding_key = self.get_decoding_key(decoding_key.as_bytes());
         let token_message = jsonwebtoken::decode::<Value>(
             self.jwt.as_str(),
-            &jsonwebtoken::DecodingKey::from_secret(decoding_key.as_bytes()),
+            &decoding_key,
             &validation,
         );
         // TODO(jlc-christie): display error message to user somehow?
@@ -128,5 +129,23 @@ impl<'a> Signature<'a> {
             .context("failed to decode header")?;
 
         Ok(header.alg)
+    }
+
+    fn get_decoding_key(&self, decoding_key_bytes: &[u8]) -> jsonwebtoken::DecodingKey {
+        match self.alg {
+            Algorithm::HS256 | Algorithm::HS384 | Algorithm::HS512 => {
+                jsonwebtoken::DecodingKey::from_secret(decoding_key_bytes)
+            }
+            Algorithm::RS256 | Algorithm::RS384 | Algorithm::RS512 | Algorithm::PS256
+            | Algorithm::PS384 | Algorithm::PS512 => {
+                jsonwebtoken::DecodingKey::from_rsa_pem(decoding_key_bytes)
+                    .unwrap_or(jsonwebtoken::DecodingKey::from_secret(decoding_key_bytes))
+            },
+            Algorithm::ES256 | Algorithm::ES384 => {
+                jsonwebtoken::DecodingKey::from_ec_pem(decoding_key_bytes)
+                    .unwrap_or(jsonwebtoken::DecodingKey::from_secret(decoding_key_bytes))
+            },
+            Algorithm::EdDSA => todo!("EdDSA not yet supported")
+        }
     }
 }
