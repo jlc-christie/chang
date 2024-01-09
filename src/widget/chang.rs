@@ -1,6 +1,6 @@
 use ratatui::prelude::*;
-use ratatui::widgets::{Block, Borders, Widget};
-use tui_textarea::{Input, TextArea};
+use ratatui::widgets::{Widget};
+use tui_textarea::{Input};
 use anyhow::{Context, Result};
 use base64::Engine;
 use std::str;

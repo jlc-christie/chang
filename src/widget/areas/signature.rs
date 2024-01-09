@@ -1,8 +1,7 @@
 use std::collections::{HashSet};
 use anyhow::{Context, Result};
 use jsonwebtoken::Algorithm;
-// TODO(jlc-christie): remove glob, use specific imports (even if it is from prelude)
-use ratatui::prelude::*;
+use ratatui::prelude::{Style, Color, Line, Span, Stylize};
 use ratatui::widgets::{Block, Borders, Widget};
 use serde_json::Value;
 use tui_textarea::{Input, Key, TextArea};
@@ -17,7 +16,6 @@ pub struct Signature<'a> {
 }
 
 impl<'a> Signature<'a> {
-    #[allow(dead_code)]
     pub fn new(jwt: String) -> Result<Self> {
         let mut text_area = TextArea::default();
         text_area.set_block(
