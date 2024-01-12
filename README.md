@@ -1,6 +1,8 @@
 # Chang
 A TUI for debugging JWTs offline, inspired by [JWT.io](https://jwt.io).
 
+![chang TUI](chang.png)
+
 ## Usage
 ```bash
 chang <jwt>
