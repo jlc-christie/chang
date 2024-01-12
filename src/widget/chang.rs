@@ -119,3 +119,82 @@ impl<'a> Widget for Chang<'a> {
         self.signature.widget().render(chunks[2], buf);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+    use crossterm::event::{KeyCode, KeyEvent};
+    use super::*;
+
+    #[test]
+    fn test_chang_signature_validation_es256() {
+        let jwt = fs::read_to_string("examples/es256/jwt")
+            .expect("failed to read ES256 JWT from file");
+        let mut chang = Chang::new(jwt)
+            .expect("failed to create change from ES256 JWT");
+        assert!(!chang.signature.valid);
+        let key = fs::read_to_string("examples/es256/pub")
+            .expect("failed to read ES256 public key from file");
+        let input: Vec<Input> = key.chars()
+            .map(|c| Input::from(KeyEvent::from(KeyCode::Char(c))))
+            .collect();
+        for input in input {
+            chang.process_input(input);
+        }
+        assert!(chang.signature.valid);
+    }
+
+    #[test]
+    fn test_chang_signature_validation_hs256() {
+        let jwt = fs::read_to_string("examples/hs256/jwt")
+            .expect("failed to read HS256 JWT from file");
+        let mut chang = Chang::new(jwt)
+            .expect("failed to create change from HS256 JWT");
+        assert!(!chang.signature.valid);
+        let key = fs::read_to_string("examples/hs256/key")
+            .expect("failed to read HS256 key from file");
+        let input: Vec<Input> = key.chars()
+            .map(|c| Input::from(KeyEvent::from(KeyCode::Char(c))))
+            .collect();
+        for input in input {
+            chang.process_input(input);
+        }
+        assert!(chang.signature.valid);
+    }
+
+    #[test]
+    fn test_chang_signature_validation_ps256() {
+        let jwt = fs::read_to_string("examples/ps256/jwt")
+            .expect("failed to read PS256 JWT from file");
+        let mut chang = Chang::new(jwt)
+            .expect("failed to create change from PS256 JWT");
+        assert!(!chang.signature.valid);
+        let key = fs::read_to_string("examples/ps256/pub")
+            .expect("failed to read PS256 public key from file");
+        let input: Vec<Input> = key.chars()
+            .map(|c| Input::from(KeyEvent::from(KeyCode::Char(c))))
+            .collect();
+        for input in input {
+            chang.process_input(input);
+        }
+        assert!(chang.signature.valid);
+    }
+
+    #[test]
+    fn test_chang_signature_validation_rs256() {
+        let jwt = fs::read_to_string("examples/rs256/jwt")
+            .expect("failed to read RS256 JWT from file");
+        let mut chang = Chang::new(jwt)
+            .expect("failed to create change from RS256 JWT");
+        assert!(!chang.signature.valid);
+        let key = fs::read_to_string("examples/rs256/pub")
+            .expect("failed to read RS256 public key from file");
+        let input: Vec<Input> = key.chars()
+            .map(|c| Input::from(KeyEvent::from(KeyCode::Char(c))))
+            .collect();
+        for input in input {
+            chang.process_input(input);
+        }
+        assert!(chang.signature.valid);
+    }
+}

@@ -11,7 +11,7 @@ pub struct Signature<'a> {
     text_area: TextArea<'a>,
     jwt: String,
     alg: jsonwebtoken::Algorithm,
-    valid: bool,
+    pub valid: bool,
     focused: bool,
 }
 
