@@ -1,4 +1,4 @@
-![chang TUI](chang.gif)
+![chang TUI](./chang.gif)
 # Chang
 A TUI for debugging JWTs offline, inspired by [JWT.io](https://jwt.io).
 
